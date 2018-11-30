@@ -1,44 +1,164 @@
 import React from 'react';
 import {
-  Image,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Button,
+  TextInput
 } from 'react-native';
-import { WebBrowser } from 'expo';
+import firebase from 'firebase';
 
-import { MonoText } from '../components/StyledText';
 
 export default class meeting extends React.Component {
   static navigationOptions = {
     title: 'Meeting',
   };
+  state = {
+    date: '',
+    from: '',
+    to: '',
+    topic: '',
+    detail: '',
+    type: '',
+    
+  };
+  
+  onChooseImagePress = async () => {
+    //let result = await ImagePicker.launchCameraAsync();
+    let result = await ImagePicker.launchImageLibraryAsync();
 
-//------------------------------------------------start edit-----------------------------------------------
+    if (!result.cancelled) {
+      this.uploadImage(result.uri, "test.jpg")
+        .then(() => {
+          alert("Success");
+        })
+        .catch((error) => {
+          alert(error);
+        });
+      this.setState({ image: result.uri });
+    }
+  };
+
+  
+  handleDate = (text) => {
+    this.setState({ date: text })
+  }
+  handleFrom = (text) => {
+    this.setState({ from: text })
+  }
+  handleTo = (text) => {
+    this.setState({ to: text })
+  }
+  handleTopic = (text) => {
+    this.setState({ topic: text })
+  }
+  handleDetail = (text) => {
+    this.setState({ detail: text })
+  }
+  handleType = (text) => {
+    this.setState({ type: text })
+  }
+
+  alert = (firstname, lastname) => {
+    alert('FirstName: ' + firstname + '\n' + 'LastName: ' + lastname)
+  }
+  //------------------------------------------------ start edit-----------------------------------------------
   render() {
+    let { image } = this.state;
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-
-            <View style={styles.getStartedContainer}>
-                {this._maybeRenderDevelopmentModeWarning()}
-            <Text style={styles.getStartedText}>Get started by opening and edit</Text>
-
-            <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-              <MonoText style={styles.codeHighlightText}>screens/meeting.js</MonoText>
+          <View style={styles.container}>
+            <Text style={{ marginLeft: 50 }}>
+              Request Form
+               </Text>
+            
+            {/* ----- field input ---- */}
+            <View style={{ alignItems: 'center' }}>
+            <Text styles={styles.text}>
+                Date
+            </Text>
+              <TextInput style={styles.input}
+                underlineColorAndroid="transparent"
+                placeholder={'11/30/2018'}
+                placeholderTextColor="#000"
+                autoCapitalize="none"
+                onChangeText={this.handleDate} />
+              <Text styles={styles.text}>
+                From
+            </Text>
+              <TextInput style={styles.input}
+                underlineColorAndroid="transparent"
+                placeholder={'14:30'}
+                placeholderTextColor="#000"
+                autoCapitalize="none"
+                onChangeText={this.handleFrom} />
+              <Text styles={styles.text}>
+                To
+            </Text>
+              <TextInput style={styles.input}
+                underlineColorAndroid="transparent"
+                placeholder={'15:30'}
+                placeholderTextColor="#000"
+                autoCapitalize="none"
+                onChangeText={this.handleTo} />
+              <Text styles={styles.text}>
+                Topic
+            </Text>
+              <TextInput style={styles.input}
+                underlineColorAndroid="transparent"
+                placeholder={'Topic name'}
+                placeholderTextColor="#000"
+                autoCapitalize="none"
+                onChangeText={this.handleTopic} />
+              <Text styles={styles.text}>
+                Detail
+            </Text>
+              <TextInput style={styles.input}
+                underlineColorAndroid="transparent"
+                placeholder={'Detail of your topic'}
+                placeholderTextColor="#000"
+                autoCapitalize="none"
+                onChangeText={this.handleDetail} />
+                <Text styles={styles.text}>
+                Type
+            </Text>
+              <TextInput style={styles.input}
+                underlineColorAndroid="transparent"
+                placeholder={' '}
+                placeholderTextColor="#000"
+                autoCapitalize="none"
+                onChangeText={this.handleType} />
             </View>
-
+           
+            
+            <View style={{ alignItems: "center" }}>
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={
+                  () => firebase.database().ref('request/id/009').set({
+                    date: this.state.date,
+                    from: this.state.from,
+                    to: this.state.to,
+                    topic: this.state.topic,
+                    detail: this.state.detail,
+                    type: this.state.type,
+                  })
+                }>
+                <Text style={styles.submitButtonText}> Submit </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </View>
     );
   }
-  //------------------------------------------------end edit-----------------------------------------------
+  //------------------------------------------------ end edit-----------------------------------------------
   _maybeRenderDevelopmentModeWarning() {
-    if (__DEV__) {
+    if (_DEV_) {
       const learnMoreButton = (
         <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
           Learn more
@@ -69,7 +189,6 @@ const styles = StyleSheet.create({
   },
   developmentModeText: {
     marginBottom: 20,
-    color: 'rgba(0,0,0,0.4)',
     fontSize: 14,
     lineHeight: 19,
     textAlign: 'center',
@@ -97,16 +216,13 @@ const styles = StyleSheet.create({
     marginVertical: 7,
   },
   codeHighlightText: {
-    color: 'rgba(96,100,109, 0.8)',
   },
   codeHighlightContainer: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 3,
     paddingHorizontal: 4,
   },
   getStartedText: {
     fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
     lineHeight: 24,
     textAlign: 'center',
   },
@@ -130,11 +246,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fbfbfb',
     paddingVertical: 20,
   },
-  tabBarInfoText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    textAlign: 'center',
-  },
   navigationFilename: {
     marginTop: 5,
   },
@@ -149,4 +260,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2e78b7',
   },
+  text: {
+    color: 'black',
+  },
+  input: {
+    padding:20,
+    margin: 15,
+    height: 40,
+    width: 250,
+    borderColor: '#86888A',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  submitButton: {
+    backgroundColor: '#1FB310',
+    padding: 10,
+    margin: 15,
+    height: 40,
+    width: 100,
+    borderRadius: 50,
+    alignItems: 'center'
+  },
+  submitButtonText: {
+    color: 'white'
+  }
+
 });
